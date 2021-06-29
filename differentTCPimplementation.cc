@@ -100,14 +100,14 @@ static void CwndTracer (uint32_t oldval, uint32_t newval)
 int main (int argc, char *argv[])
 {
   
-  int nWifi=5;
+  int nWifi=3;
   int nSinks=1; 
   double txp=7.5;
-  double totalTime=1000;
+  double totalTime=100;
   uint32_t mobilityModel=1;//1-RWP, 2-GaussMarkov 
   uint32_t routingProtocol=2;//1-OLSR, 2-AODV, 3-DSDV, 4-DSR
-  double X=100.0;
-  double Y=50.0;
+  double X=1000.0;
+  double Y=1000.0;
   double Z=10.0;
   std::string phyMode ("DsssRate11Mbps");
   
@@ -333,10 +333,10 @@ MobilityHelper mobilityAdhoc;
   sY<<"ns3::UniformRandomVariable[Min=0.0|Max="<<Y<<"]";
   sZ<<"ns3::UniformRandomVariable[Min=0.0|Max="<<Z<<"]";
   
-  pos.SetTypeId ("ns3::RandomBoxPositionAllocator");
+  pos.SetTypeId ("ns3::RandomRectanglePositionAllocator");
   pos.Set ("X", StringValue (sX.str()));
   pos.Set ("Y", StringValue (sY.str()));
-  pos.Set ("Z", StringValue (sZ.str()));
+  //pos.Set ("Z", StringValue (sZ.str()));
 
   Ptr<PositionAllocator> taPositionAlloc = pos.Create ()->GetObject<PositionAllocator> ();
   streamIndex += taPositionAlloc->AssignStreams (streamIndex);
@@ -361,7 +361,7 @@ MobilityHelper mobilityAdhoc;
   std::stringstream ssNormPitch;
   ssNormPitch <<"ns3::NormalRandomVariable[Mean=0.0|Variance=0.02|Bound=0.04]";
 
-  switch (mobilityModel)
+ /* switch (mobilityModel)
     {
     case 1:
       mobilityAdhoc.SetMobilityModel ("ns3::RandomWaypointMobilityModel",
@@ -381,7 +381,7 @@ MobilityHelper mobilityAdhoc;
                      "NormalDirection", StringValue (ssNormDirection.str()),
                      "NormalPitch", StringValue (ssNormPitch.str()));
       break;
-/*    case 3:
+    case 3:
       mobilityAdhoc.SetMobilityModel ("ns3::SteadyStateRandomWaypointMobilityModel",
                                   //"Speed", StringValue (ssSpeed.str ()),
                                   //"Pause", StringValue (ssPause.str ()),
@@ -394,19 +394,19 @@ MobilityHelper mobilityAdhoc;
                               "Time", StringValue ("2s"),
                               "Speed", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"),
                               "Bounds", BoxValue (Box (0, X, 0, Y, 0, Z)));
-*/
+*//*
     default:
       NS_FATAL_ERROR ("No such model:" << mobilityModel);
     }
   
+*/
 
-
-/*If you want to fix the node positions
+///*If you want to fix the node positions
 
 mobilityAdhoc.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-        Vector node1_Position(0.1, 0.1, 0.0);
-	Vector node2_Position(50.0, 0.1,0.0);
-	Vector node3_Position(100.0, 0.1, 0.0);	
+        Vector node1_Position(0.0, 0.0, 0.0);
+	Vector node2_Position(138.3, 0.0,0.0);
+	Vector node3_Position(500.0, 0.0, 0.0);	
 
 	ListPositionAllocator myListPositionAllocator;
 	myListPositionAllocator.Add(node1_Position);
@@ -414,9 +414,9 @@ mobilityAdhoc.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
 	myListPositionAllocator.Add(node3_Position);
 	
 	mobilityAdhoc.SetPositionAllocator(&myListPositionAllocator);
-*/
+//
 
-  mobilityAdhoc.SetPositionAllocator (taPositionAlloc);
+  //mobilityAdhoc.SetPositionAllocator (taPositionAlloc);
   mobilityAdhoc.Install (adhocNodes);
   streamIndex += mobilityAdhoc.AssignStreams (adhocNodes, streamIndex);
   NS_UNUSED (streamIndex); // From this point, streamIndex is unused
@@ -424,7 +424,7 @@ mobilityAdhoc.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
 
 void setupRoutingProtocol(uint32_t protocol,NodeContainer adhocNodes)
 {
-NS_LOG_FUNCTION("setupMobility");
+NS_LOG_FUNCTION("setupRouting");
 AodvHelper aodv;
   OlsrHelper olsr;
   DsdvHelper dsdv;
@@ -476,7 +476,9 @@ setupWifiPhy(double txp)
   
   YansWifiChannelHelper wifiChannel;
   wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
-  wifiChannel.AddPropagationLoss ("ns3::FriisPropagationLossModel");
+  //wifiChannel.AddPropagationLoss ("ns3::FriisPropagationLossModel");
+  wifiChannel.AddPropagationLoss ("ns3::TwoRayGroundPropagationLossModel");
+  Config::SetDefault ("ns3::TwoRayGroundPropagationLossModel::HeightAboveZ", DoubleValue (1.5));
   
   wifiPhy.SetChannel (wifiChannel.Create ());
 
