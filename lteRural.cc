@@ -140,13 +140,14 @@ main (int argc, char *argv[])
   // LogComponentEnable ("A3RsrpHandoverAlgorithm", logLevel);
 
   uint16_t numberOfUes = 1;
-  uint16_t numberOfEnbs = 2;
+  uint16_t numberOfEnbs = 5;
   uint16_t numBearersPerUe = 0;
   double distance = 500.0; // m
-  double yForUe = 500.0;   // m
-  double speed = 20;       // m/s
-  double simTime = (double)(numberOfEnbs + 1) * distance / speed; // 1500 m / 20 m/s = 75 secs
+  double yForUe = 1400.0;   // m
+  double speed = 30;       // m/s
+  double simTime = (double)(3) * distance / speed; // 1500 m / 20 m/s = 75 secs
   double enbTxPowerDbm = 46.0;
+  double UeElevation=40;
 
   // change some default attributes so that they are reasonable for
   // this scenario, but do this before processing command line
@@ -230,11 +231,27 @@ main (int argc, char *argv[])
 
   // Install Mobility Model in eNB
   Ptr<ListPositionAllocator> enbPositionAlloc = CreateObject<ListPositionAllocator> ();
-  for (uint16_t i = 0; i < numberOfEnbs; i++)
+
+  Vector enbPosition1 (1000,150, 0);
+  enbPositionAlloc->Add (enbPosition1);
+
+  Vector enbPosition2 (650,1550, 0);
+  enbPositionAlloc->Add (enbPosition2);
+
+  Vector enbPosition3 (1100,1900, 0);
+  enbPositionAlloc->Add (enbPosition3);
+
+  Vector enbPosition4 (2350,2550, 0);
+  enbPositionAlloc->Add (enbPosition4);
+
+  Vector enbPosition5 (1000,4850, 0);
+  enbPositionAlloc->Add (enbPosition5);
+
+/*  for (uint16_t i = 0; i < numberOfEnbs; i++)
     {
       Vector enbPosition (distance * (i + 1), distance, 0);
       enbPositionAlloc->Add (enbPosition);
-    }
+    }*/
   MobilityHelper enbMobility;
   enbMobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   enbMobility.SetPositionAllocator (enbPositionAlloc);
@@ -244,7 +261,7 @@ main (int argc, char *argv[])
   MobilityHelper ueMobility;
   ueMobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");
   ueMobility.Install (ueNodes);
-  ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (0, yForUe, 0));
+  ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (150, yForUe, UeElevation));
   ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (speed, 0, 0));
 
   // Install LTE Devices in eNB and UEs
