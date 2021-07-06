@@ -113,6 +113,25 @@ NotifyHandoverEndOkEnb (std::string context,
             << std::endl;
 }
 
+static MobilityHelper ueMobility;
+
+void UEmobilityCheck(NodeContainer ueNodes, double yForUe, double UeElevation, double speed)
+{
+  //Ptr<MobilityModel> mob = ueNodes.Get(0)->GetObject<MobilityModel>();
+  Vector m_position =ueNodes.Get (0)->GetObject<MobilityModel> ()->GetPosition();
+
+  if (m_position.x >= 650) 
+    {
+      ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (650, yForUe, UeElevation));
+      ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (-1*speed, 0, 0));//to move in reverse
+    }
+  if (m_position.x <150) 
+    {
+      ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (150, yForUe, UeElevation));
+      ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (0*speed, 0, 0));//to stop moving      
+    }
+  Simulator::Schedule (Seconds (1.0), &UEmobilityCheck, ueNodes, yForUe, UeElevation, speed);
+}
 
 /**
  * Sample simulation script for an automatic X2-based handover based on the RSRQ measures.
@@ -257,12 +276,13 @@ main (int argc, char *argv[])
   enbMobility.SetPositionAllocator (enbPositionAlloc);
   enbMobility.Install (enbNodes);
 
-  // Install Mobility Model in UE
-  MobilityHelper ueMobility;
+// Install Mobility Model in UE
   ueMobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");
   ueMobility.Install (ueNodes);
   ueNodes.Get (0)->GetObject<MobilityModel> ()->SetPosition (Vector (150, yForUe, UeElevation));
   ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (Vector (speed, 0, 0));
+
+  UEmobilityCheck( ueNodes, yForUe, UeElevation, speed);
 
   // Install LTE Devices in eNB and UEs
   Config::SetDefault ("ns3::LteEnbPhy::TxPower", DoubleValue (enbTxPowerDbm));
